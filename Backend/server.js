@@ -6,7 +6,9 @@ const userRoutes = require('./routes/userRoutes');
 dotenv.config();
 
 const app = express();
+const cors = require('cors');
 app.use(express.json());
+app.use(cors());
 
 // Criar/verificar o banco e sincronizar os modelos
 (async () => {

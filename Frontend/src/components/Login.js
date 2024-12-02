@@ -64,9 +64,11 @@ const SignupPopup = ({ onClose }) => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
+  
+    console.log('Enviando dados para o backend:', { name, email, password });
+  
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/createUsuario`, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/users/createUsuario`, {
         name,
         email,
         password,
@@ -74,8 +76,8 @@ const SignupPopup = ({ onClose }) => {
       alert('Usuário criado com sucesso!');
       onClose(); // Fecha o popup após o cadastro
     } catch (err) {
+      console.error('Erro ao criar usuário:', err.response || err);
       alert('Erro ao criar usuário. Verifique os dados.');
-      console.error(err);
     }
   };
 
