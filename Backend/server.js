@@ -17,6 +17,11 @@ app.use(cors());
     await sequelize.authenticate(); // Conecta ao banco
     console.log('Conexão com o banco de dados estabelecida com sucesso.');
 
+    // Importar os modelos antes de sincronizar
+    const User = require('./models/users');
+    const Terms = require('./models/terms');
+    const UserTerms = require('./models/user_terms');
+
     await sequelize.sync(); // Sincroniza os modelos
     console.log('Tabelas sincronizadas com sucesso.');
   } catch (err) {
