@@ -66,6 +66,7 @@ const SignupPopup = ({ onClose }) => {
     e.preventDefault();
   
     console.log('Enviando dados para o backend:', { name, email, password });
+    console.log()
   
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/users/createUsuario`, {
