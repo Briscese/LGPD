@@ -6,7 +6,7 @@ const sendEmailsToUsers = require('../emailSender');
 const router = express.Router();
 
 // Criar usuário
-router.post('/', async (req, res) => {
+router.post('/createUsuario', async (req, res) => {
   const { name, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
 
