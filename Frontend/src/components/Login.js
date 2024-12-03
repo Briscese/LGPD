@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import UserPage from './UserPage';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showSignup, setShowSignup] = useState(false);
+  const [token, setToken] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,17 +16,22 @@ const Login = () => {
         email,
         password,
       });
-      alert('Login bem-sucedido!');
-      console.log('Token:', response.data.token);
+
+      setToken(response.data.token); // Salva o token para autenticação
     } catch (err) {
       alert('Erro no login. Verifique suas credenciais.');
       console.error(err);
     }
   };
 
+  if (token) {
+    // Redireciona para a página do usuário se o login foi bem-sucedido
+    return <UserPage token={token} />;
+  }
+
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Login - App de Segurança</h2>
       <form onSubmit={handleLogin}>
         <div>
           <label>Email:</label>
@@ -56,7 +63,6 @@ const Login = () => {
   );
 };
 
-// Componente do popup de cadastro
 const SignupPopup = ({ onClose }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -99,21 +105,21 @@ const SignupPopup = ({ onClose }) => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-  
+
     // Obter os IDs dos termos obrigatórios
     const mandatoryTerms = terms.filter((term) => term.mandatory);
     const acceptedMandatory = mandatoryTerms.every((term) => acceptedTerms[term.id]);
-  
+
     if (!acceptedMandatory) {
       alert('Você deve aceitar todos os termos obrigatórios.');
       return;
     }
-  
+
     try {
       const acceptedTermsIds = Object.keys(acceptedTerms)
         .filter((termId) => acceptedTerms[termId])
         .map((termId) => parseInt(termId, 10)); // Converte strings para números
-  
+
       // Criar o usuário no backend
       await axios.post(`${process.env.REACT_APP_API_URL}/users/createUsuario`, {
         name,
@@ -121,7 +127,7 @@ const SignupPopup = ({ onClose }) => {
         password,
         acceptedTerms: acceptedTermsIds, // Envia os IDs dos termos aceitos
       });
-  
+
       alert('Usuário criado com sucesso!');
       onClose(); // Fecha o popup após o cadastro
     } catch (err) {
@@ -129,7 +135,6 @@ const SignupPopup = ({ onClose }) => {
       alert('Erro ao criar usuário. Verifique os dados.');
     }
   };
-  
 
   return (
     <div style={popupStyle}>
