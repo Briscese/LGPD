@@ -7,6 +7,7 @@ const UserTerms = require('./models/user_terms');
 const ExcludedUsers = require('./models/excluded_users'); // Para o banco de excluídos
 const { excludedDb } = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
+const termsRoutes = require('./routes/termsRoutes'); // Importa as rotas de termos
 
 dotenv.config();
 
@@ -20,18 +21,22 @@ const initialTerms = [
   {
     version: '1.0',
     content: 'Eu concordo com a coleta e o armazenamento dos meus dados pessoais conforme as finalidades descritas na política de privacidade.',
+    mandatory: true,
   },
   {
     version: '1.0',
     content: 'Eu autorizo o compartilhamento dos meus dados pessoais com terceiros estritamente para a execução dos serviços contratados.',
+    mandatory: true,
   },
   {
     version: '1.0',
     content: 'Eu aceito receber ofertas, promoções e comunicações relacionadas aos produtos e serviços oferecidos.',
+    mandatory: false,
   },
   {
     version: '1.0',
     content: 'Eu autorizo a utilização dos meus dados para personalização da minha experiência de uso no sistema.',
+    mandatory: false,
   },
 ];
 
@@ -76,6 +81,7 @@ const initialTerms = [
 
 // Rotas
 app.use('/users', userRoutes);
+app.use('/terms', termsRoutes); // Agora usa termsRoutes corretamente
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 3000;
