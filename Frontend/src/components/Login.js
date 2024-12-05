@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import UserPage from './UserPage';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showSignup, setShowSignup] = useState(false);
   const [token, setToken] = useState(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const navigate = useNavigate();  // Hook de navegação
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,7 +19,17 @@ const Login = () => {
         password,
       });
 
-      setToken(response.data.token); // Salva o token para autenticação
+      const { token, redirectToTerms } = response.data;
+      setToken(token);  // Salva o token para autenticação
+
+      if (redirectToTerms) {
+        // Redireciona para a página de termos se necessário
+        navigate('/terms', { state: { token } });
+      } else {
+        // Caso não precise dos termos, redireciona para o UserPage
+        return <UserPage token={token} />;
+      }
+
     } catch (err) {
       alert('Erro no login. Verifique suas credenciais.');
       console.error(err);
@@ -25,7 +37,7 @@ const Login = () => {
   };
 
   if (token) {
-    // Redireciona para a página do usuário se o login foi bem-sucedido
+    // Caso o token seja válido, navega para a UserPage
     return <UserPage token={token} />;
   }
 
@@ -63,6 +75,8 @@ const Login = () => {
   );
 };
 
+// Popup de cadastro (não alterado)
+
 const SignupPopup = ({ onClose }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,7 +84,6 @@ const SignupPopup = ({ onClose }) => {
   const [terms, setTerms] = useState([]);
   const [acceptedTerms, setAcceptedTerms] = useState({});
 
-  // Buscar os termos da versão mais recente da LGPD
   useEffect(() => {
     const fetchTerms = async () => {
       try {
@@ -106,7 +119,6 @@ const SignupPopup = ({ onClose }) => {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    // Obter os IDs dos termos obrigatórios
     const mandatoryTerms = terms.filter((term) => term.mandatory);
     const acceptedMandatory = mandatoryTerms.every((term) => acceptedTerms[term.id]);
 
@@ -118,18 +130,17 @@ const SignupPopup = ({ onClose }) => {
     try {
       const acceptedTermsIds = Object.keys(acceptedTerms)
         .filter((termId) => acceptedTerms[termId])
-        .map((termId) => parseInt(termId, 10)); // Converte strings para números
+        .map((termId) => parseInt(termId, 10)); 
 
-      // Criar o usuário no backend
       await axios.post(`${process.env.REACT_APP_API_URL}/users/createUsuario`, {
         name,
         email,
         password,
-        acceptedTerms: acceptedTermsIds, // Envia os IDs dos termos aceitos
+        acceptedTerms: acceptedTermsIds,
       });
 
       alert('Usuário criado com sucesso!');
-      onClose(); // Fecha o popup após o cadastro
+      onClose();
     } catch (err) {
       console.error('Erro ao criar usuário:', err.response || err);
       alert('Erro ao criar usuário. Verifique os dados.');
@@ -168,7 +179,6 @@ const SignupPopup = ({ onClose }) => {
           />
         </div>
 
-        {/* Exibir os termos */}
         <div>
           <h3>Termos da LGPD</h3>
           {terms.length > 0 ? (
@@ -179,7 +189,7 @@ const SignupPopup = ({ onClose }) => {
                   id={`term-${term.id}`}
                   checked={acceptedTerms[term.id]}
                   onChange={() => handleCheckboxChange(term.id)}
-                  required={index < 2} // Os dois primeiros termos são obrigatórios
+                  required={index < 2}
                 />
                 <label htmlFor={`term-${term.id}`}>{term.content}</label>
               </div>
