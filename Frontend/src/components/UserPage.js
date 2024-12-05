@@ -27,7 +27,7 @@ const UserPage = ({ token }) => {
         setEmail(userResponse.data.email)
 
         // Buscar os termos
-        const termsResponse = await axios.get("http://localhost:3000/terms/pegartermos")
+        const termsResponse = await axios.get("http://localhost:3006/terms/pegartermos")
         setTerms(termsResponse.data)
 
         // Definir os IDs dos termos já aceitos pelo usuário
@@ -105,7 +105,7 @@ const UserPage = ({ token }) => {
 
     try {
       // Envia a lista única de IDs de termos aceitos ao backend
-      await axios.put("http://localhost:3000/terms/atualizartermos", uniqueAcceptedTermIds, {
+      await axios.put("http://localhost:3006/terms/atualizartermos", uniqueAcceptedTermIds, {
         headers: { Authorization: `Bearer ${token}` },
       })
 

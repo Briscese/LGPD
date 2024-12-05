@@ -14,7 +14,7 @@ const TermsPage = () => {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/terms/pegartermos');
+        const response = await axios.get('http://localhost:3006/terms/pegartermos');
         setTerms(response.data);
       } catch (error) {
         console.error('Erro ao buscar termos:', error);
@@ -50,7 +50,7 @@ const TermsPage = () => {
 
     try {
       // Envia o PUT com os IDs dos termos aceitos
-      await axios.put('http://localhost:3000/terms/atualizartermos', acceptedTermIds, {
+      await axios.put('http://localhost:3006/terms/atualizartermos', acceptedTermIds, {
         headers: { Authorization: `Bearer ${token}` }, // Adiciona o token no cabeçalho para autenticação
       });
 

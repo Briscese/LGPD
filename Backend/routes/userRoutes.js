@@ -110,33 +110,49 @@ async function checkUserTerms(userId) {
 
 // Login do usuário
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body
+  const { email, password } = req.body;
 
   try {
     // Busca o usuário pelo email
-    const user = await User.findOne({ where: { email } })
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ error: "Usuário não encontrado." })
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    console.log("userId:", user.id);
+
+    // Verifica se o ID do usuário está na tabela ExcludedUsers
+    const excludedUser = await ExcludedUsers.findOne({ where: { userId: user.id } });
+    if (excludedUser) {
+      // Remove os registros relacionados na tabela UserTerms
+      await UserTerms.destroy({ where: { userId: user.id } });
+
+      // Exclui o usuário da tabela Users
+      await user.destroy();
+
+      return res.status(403).json({
+        error: "Conta excluída. Por favor, crie uma nova conta para acessar.",
+      });
     }
 
     // Verifica se a senha está correta
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Senha incorreta." })
+      return res.status(401).json({ error: "Senha incorreta." });
     }
 
-    console.log("userId: " + user.id)
+    console.log("userId:", user.id);
 
     // Verifica os termos do usuário
-    const { termsToUpdate, notAcceptedMandatoryTerms } = await checkUserTerms(user.id)
+    const { termsToUpdate, notAcceptedMandatoryTerms } = await checkUserTerms(user.id);
 
-    console.log("termsToUpdate:", JSON.stringify(termsToUpdate))
-    console.log("notAcceptedMandatoryTerms:", JSON.stringify(notAcceptedMandatoryTerms))
+    console.log("termsToUpdate:", JSON.stringify(termsToUpdate));
+    console.log("notAcceptedMandatoryTerms:", JSON.stringify(notAcceptedMandatoryTerms));
 
     // Gera um token JWT para autenticação
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" })
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     if (termsToUpdate.length > 0) {
       // Se algum termo foi atualizado, redireciona para uma página onde o usuário deve aceitar os novos termos
@@ -144,8 +160,8 @@ router.post("/login", async (req, res) => {
         message: "Alguns termos foram atualizados. Por favor, aceite-os novamente.",
         redirectToTerms: true,
         termsToUpdate,
-        token
-      })
+        token,
+      });
     }
 
     if (notAcceptedMandatoryTerms.length > 0) {
@@ -154,22 +170,22 @@ router.post("/login", async (req, res) => {
         message: "Você deve aceitar todos os termos obrigatórios.",
         redirectToTerms: true,
         mandatoryTerms: notAcceptedMandatoryTerms,
-        token
-      })
+        token,
+      });
     }
 
     // Busca os termos aceitos pelo usuário
     const userTerms = await UserTerms.findAll({
       where: { userId: user.id },
       include: [{ model: Terms }],
-    })
+    });
 
     const acceptedTerms = userTerms.map((ut) => ({
       id: ut.Term.id,
       content: ut.Term.content,
       version: ut.Term.version,
       mandatory: ut.Term.mandatory,
-    }))
+    }));
 
     res.status(200).json({
       token,
@@ -178,12 +194,13 @@ router.post("/login", async (req, res) => {
         email: user.email,
         acceptedTerms,
       },
-    })
+    });
   } catch (err) {
-    console.error("Erro ao realizar login:", err)
-    res.status(500).json({ error: "Erro interno do servidor." })
+    console.error("Erro ao realizar login:", err);
+    res.status(500).json({ error: "Erro interno do servidor." });
   }
-})
+});
+
 
 // Obter os dados do usuário
 router.get("/profile", async (req, res) => {
